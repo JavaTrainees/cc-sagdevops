@@ -1,0 +1,45 @@
+alias: sag-msc-server
+description: Microservices container instance
+
+environments:
+  default:
+    is.msc.license.key: ${}                 # REQUIRED: MSC license key
+    is.instance.name:   msc                 # Instance name
+    is.primary.port:    5555                # Primary port number
+    is.diagnostic.port: 9999                # Dialgnostic port number
+    is.jmx.port:        8094                # JMX port number
+    is.memory.init:     64                  # Initial memory size
+    is.memory.max:      128                 # Maximum memory size
+    is.install.service: false
+    is.fixes: [wMFix.integrationServer.Core]
+
+layers:
+  runtime:
+    productRepo: ${repo.product}
+    fixRepo:     ${repo.fix}
+    templates:
+      - msc-server
+
+templates:
+  msc-server:
+    licenses:
+      "IntegrationServer/config/licenseKey.xml": ${is.msc.license.key} 
+    fixes: ${is.fixes}
+    products:
+      MSC:
+        ${is.instance.name}: 
+          primary.port:    ${is.primary.port}
+          diagnostic.port: ${is.diagnostic.port}
+          jmx.port:        ${is.jmx.port}
+          license.file:    IntegrationServer/config/licenseKey.xml
+          install.service: ${is.install.service}
+          configuration:
+            OSGI-IS_${instance.name}:
+              COMMON-MEMORY:
+                COMMON-MEMORY:
+                  InitSize: ${is.memory.init}
+                  MaxSize:  ${is.memory.max}
+            
+provision:
+  default:
+    runtime: ${nodes}

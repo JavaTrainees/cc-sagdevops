@@ -1,0 +1,45 @@
+alias: sag-is-server
+description: Integration Server core
+
+environments:
+  default:
+    is.integrationserver.license.key: ${}   # REQUIRED: IS license key
+    is.instance.name:   default             # Instance name
+    is.primary.port:    5555                # Primary port number
+    is.diagnostic.port: 9999                # Dialgnostic port number
+    is.jmx.port:        8094                # JMX port number
+    is.memory.init:     128                 # Initial memory size
+    is.memory.max:      256                 # Maximum memory size
+    is.install.service: false
+    is.fixes: [wMFix.integrationServer.Core,wMFix.integrationServer.ART]
+
+layers:
+  runtime:
+    productRepo: ${repo.product}
+    fixRepo:     ${repo.fix}
+    templates:
+      - is-server        # first create IS instance profile
+
+templates:
+  is-server:
+    licenses:
+      "IntegrationServer/config/licenseKey.xml": ${is.integrationserver.license.key} 
+    fixes: ${is.fixes}
+    products:
+      integrationServer:
+        ${is.instance.name}: 
+          primary.port:    ${is.primary.port}
+          diagnostic.port: ${is.diagnostic.port}
+          jmx.port:        ${is.jmx.port}
+          license.file:    IntegrationServer/config/licenseKey.xml
+          install.service: ${is.install.service}
+          configuration:
+            OSGI-IS_${instance.name}:
+              COMMON-MEMORY:
+                COMMON-MEMORY:
+                  InitSize: ${is.memory.init}
+                  MaxSize:  ${is.memory.max}
+           
+provision:
+  default:
+    runtime: ${nodes}
